@@ -18,12 +18,14 @@ class NodeChangeType {
   static const updated = const NodeChangeType._('updated');
   static const moved = const NodeChangeType._('moved');
   static const deleted = const NodeChangeType._('deleted');
+  static const none = const NodeChangeType._('none');
 
   static List<NodeChangeType> get values => [
     created,
     updated,
     moved,
-    deleted
+    deleted,
+    none
   ];
 
   String toString() => this.value;

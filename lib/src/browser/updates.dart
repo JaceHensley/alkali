@@ -26,7 +26,7 @@ void _updateTrees(_) {
 }
 
 void _updateTree(Node rootNode) {
-  if (rootNode.isDirty || rootNode.hasDirtyDescendant || rootNode.change != null) {
+  if (rootNode.isDirty || rootNode.hasDirtyDescendant || rootNode.change != NodeChangeType.none) {
     rootNode.update();
     rootNode.isDirty = false;
     rootNode.children.reversed.forEach(_applyChanges);
@@ -35,7 +35,7 @@ void _updateTree(Node rootNode) {
 }
 
 void _applyChanges(Node node) {
-  if (node.isDirty || node.hasDirtyDescendant || node.change != null) {
+  if (node.isDirty || node.hasDirtyDescendant || node.change != NodeChangeType.none) {
     _applyChange(node);
     node.isDirty = false;
     node.children.reversed.forEach(_applyChanges);
@@ -60,7 +60,7 @@ void _applyChange(Node node) {
       break;
   }
 
-  node.change = null;
+  node.change = new NodeChange(NodeChangeType.none);
 }
 
 void _applyCreatedChange(Node node) {
