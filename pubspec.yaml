@@ -1,0 +1,11 @@
+name: alkali
+version: 0.0.1
+author: Jace Hensley
+description: UI framework inspired by React.js
+hompage:
+dependencies:
+  browser: '>=0.10.0 <0.11.0'
+  collection: '^1.2.0'
+transformers:
+  - $dart2js:
+      csp: true
