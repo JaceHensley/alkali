@@ -2,7 +2,6 @@ library alkali.browser;
 
 import 'dart:async';
 import 'dart:html' as html;
-import 'package:collection/priority_queue.dart';
 
 import 'core.dart';
 import 'dom.dart';
