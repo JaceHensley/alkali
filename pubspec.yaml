@@ -2,6 +2,9 @@ name: alkali
 version: 0.0.1
 author: Jace Hensley
 description: UI framework inspired by React.js
-hompage:
+hompage: https://github.com/jacehensley/alkali
 dependencies:
   browser: '>=0.10.0 <0.11.0'
+dev_dependencies:
+  benchmark_harness: '^1.0.4'
+  react: '^0.8.5'
