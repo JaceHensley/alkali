@@ -65,8 +65,10 @@ class Node {
 
   void update({bool force: false}) {
     if ((this.isDirty || force) && this.component.shouldUpdate(component.props, this._oldProps)) {
-      this.change = new NodeChange(NodeChangeType.updated, oldProps: this._oldProps, newProps: this.component.props);
-      this.component.state = new Map.from(this.component.nextState);
+      this.component._prevState = new Map.from(this.component._state);
+      this.change = new NodeChange(NodeChangeType.updated, oldProps: this._oldProps, newProps: this.component.props,
+          nextState: this.component._nextState ?? this.component._state, prevState: this.component._prevState);
+      this.component._state = new Map.from(this.change.nextState);
       _updateChildren(this);
     } else if (this.hasDirtyDescendant) {
       this.children.forEach((Node child) => child.update());
@@ -85,8 +87,8 @@ class Node {
       }
     });
 
-    this.component.props = appliedProps;
-    this.component.state.addAll(this.component.getInitialState());
+    this.component._props = appliedProps;
+    this.component._state.addAll(this.component.getInitialState());
 
     _initChildren(this);
 
@@ -113,7 +115,7 @@ class Node {
   void apply({ComponentDescription description}) {
     this.component.willReceiveProps(description.props);
     this._oldProps = this.component.props;
-    this.component.props = description.props;
+    this.component._props = description.props;
   }
 
   void _updateChildren(Node node) {
