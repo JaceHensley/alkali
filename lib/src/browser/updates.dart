@@ -31,15 +31,16 @@ void _updateTree(Node rootNode) {
     rootNode.isDirty = false;
     rootNode.children.reversed.forEach(_applyChanges);
     rootNode.hasDirtyDescendant = false;
+    _applyChanges(rootNode);
   }
 }
 
 void _applyChanges(Node node) {
   if (node.isDirty || node.hasDirtyDescendant || node.change != NodeChangeType.none) {
-    _applyChange(node);
     node.isDirty = false;
     node.children.reversed.forEach(_applyChanges);
     node.hasDirtyDescendant = false;
+    _applyChange(node);
   }
 }
 
@@ -69,16 +70,15 @@ void _applyCreatedChange(Node node) {
 }
 
 void _applyUpdatedChange(Node node) {
-  node.component.willUpdate(node.change.newProps, node.component.nextState);
+  node.component.willUpdate(node.change.newProps, node.change.nextState);
 
   if (node.component is DomComponent) {
-    _applyAttributes(node.domNode, node.change.newProps, oldProps: node.change.oldProps);
-    _applyEventListeners(node, node.change.newProps);
+    _parseProps(node, node.domNode, node.change.newProps, oldProps: node.change.oldProps);
   } else if (node.component is DomTextComponent) {
     node.domNode.text = node.component.props['children'];
   }
 
-  node.component.didUpdate(node.change.oldProps, node.component.prevState, node.domNode);
+  node.component.didUpdate(node.change.oldProps, node.change.prevState, node.domNode);
 }
 
 void _applyDeletedChange(Node node) {

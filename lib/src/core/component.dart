@@ -1,17 +1,17 @@
 part of alkali.core;
 
-abstract class Component<TProps extends ComponentDescription> {
-  Component(this.props): this._updateController = new StreamController<bool>();
+abstract class Component {
+  Component(this._props): this._updateController = new StreamController<bool>();
 
   Component.fromChildren(dynamic child): this._updateController = new StreamController<bool>() {
     this.props['children'] = child;
   }
 
-  TProps props = {};
-  Map state = {};
+  Map _props = {};
+  Map _state = {};
 
-  Map get prevState => _prevState;
-  Map get nextState => _nextState ?? state;
+  Map get props => _props;
+  Map get state => _state;
 
   Map _prevState;
   Map _nextState;

@@ -46,8 +46,7 @@ void _mountNode(Node node, html.HtmlElement mountRoot) {
     node.domNode = element;
     _elementToNode[element] = node;
 
-    _applyAttributes(element, component.props);
-    _applyEventListeners(node, node.component.props);
+    _parseProps(node, element, component.props);
 
     node.children.forEach((Node child) {
       _mountNode(child, element);
@@ -58,8 +57,15 @@ void _mountNode(Node node, html.HtmlElement mountRoot) {
     node.children.forEach((Node child) {
       _mountNode(child, mountRoot);
     });
-    node.domNode = node.children.first.domNode;
-    _applyEventListeners(node, node.component.props);
+
+    if (node.children.length > 1) {
+      assert(() {
+        html.window.console.warn('If a Component renders a list of children `domNode` will not be set.');
+        return true;
+      });
+    } else {
+      node.domNode = node.children.first.domNode;
+    }
   }
 
   node.component.didMount(mountRoot);

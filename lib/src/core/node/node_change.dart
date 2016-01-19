@@ -2,10 +2,14 @@ part of alkali.core;
 
 class NodeChange {
   final NodeChangeType type;
+
   final Map oldProps;
   final Map newProps;
 
-  NodeChange(NodeChangeType this.type, {Map this.oldProps, Map this.newProps});
+  final Map prevState;
+  final Map nextState;
+
+  NodeChange(NodeChangeType this.type, {Map this.oldProps, Map this.newProps, Map this.prevState, Map this.nextState});
 }
 
 /// Different ways a [Node] can change.
