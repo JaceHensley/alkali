@@ -20,58 +20,16 @@ typedef EventKeyCallback(html.Event event, Object eventKey);
 
 final Map<html.Element, Set<String>> _registeredListeners = {};
 
-void _applyEventListeners(Node node, Map props) {
-  props.forEach((String eventType, listener) {
-    if (_allowedListeners.contains(eventType)) {
-      Node parent = node;
-      while (parent.parent?.domNode != null) {
-        parent = parent.parent;
-      }
+void _applyEventListener(Node node, html.Element element, String eventType, handler(String eventTye, Node node)) {
+  Set registeredListeners = _registeredListeners[element];
 
-      var element = parent.domNode;
-      Set registeredListeners = _registeredListeners[element];
-      if (registeredListeners == null) {
-        registeredListeners = _registeredListeners[element] = new Set();
-      }
-      if (!registeredListeners.contains(eventType)) {
-        _applyEventListener(element, node, eventType);
-        registeredListeners.add(eventType);
-      }
-    }
-  });
-}
+  if (registeredListeners == null) {
+    registeredListeners = _registeredListeners[element] = new Set();
+  }
 
-void _applyEventListener(html.Element element, Node node, String eventType) {
-  if (_mouseEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleMouseEvent(eventType, node));
-  } else if (_keyboardEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleKeyboardEvent(eventType, node));
-  } else if (_frameEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleFrameEvent(eventType, node));
-  } else if (_formEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleFormEvent(eventType, node));
-  } else if (_dragEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleDragEvent(eventType, node));
-  } else if (_clipboardEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleClipboardEvent(eventType, node));
-  } else if (_printEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handlePrintEvent(eventType, node));
-  } else if (_mediaEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleMediaEvent(eventType, node));
-  } else if (_animationEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleAnimationEvent(eventType, node));
-  } else if (_transitionEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleTransitionEvent(eventType, node));
-  } else if (_serverSentEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleServerSentEvent(eventType, node));
-  } else if (_miscEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleDomEvent(eventType, node));
-  } else if (_touchEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleTouchEvent(eventType, node));
-  } else if (_selectEvents.contains(eventType)) {
-    element.on[_normalizeListener(eventType)].listen(_handleSelectEvent(eventType, node));
-  } else {
-    element.on[_normalizeListener(eventType)].listen(_handleDomEvent(eventType, node));
+  if (!registeredListeners.contains(eventType)) {
+    element.on[_normalizeListener(eventType)].listen(handler(eventType, node));
+    registeredListeners.add(eventType);
   }
 }
 
@@ -86,153 +44,141 @@ String _normalizeListener(String eventType) {
   return result;
 }
 
-final Set<String> _allowedListeners = new Set()
-  ..addAll(_mouseEvents)
-  ..addAll(_keyboardEvents)
-  ..addAll(_frameEvents)
-  ..addAll(_formEvents)
-  ..addAll(_dragEvents)
-  ..addAll(_clipboardEvents)
-  ..addAll(_printEvents)
-  ..addAll(_mediaEvents)
-  ..addAll(_animationEvents)
-  ..addAll(_transitionEvents)
-  ..addAll(_serverSentEvents)
-  ..addAll(_miscEvents)
-  ..addAll(_touchEvents)
-  ..addAll(_selectEvents);
+final Map<String, dynamic> _allListeners = {}
+  ..addAll(_mouseEventListeners)
+  ..addAll(_keyboardEventListeners)
+  ..addAll(_frameEventListeners)
+  ..addAll(_formEventListeners)
+  ..addAll(_dragEventListeners)
+  ..addAll(_clipboardEventListeners)
+  ..addAll(_printEventListeners)
+  ..addAll(_mediaEventListeners)
+  ..addAll(_animationEventListeners)
+  ..addAll(_transitionEventListeners)
+  ..addAll(_serverSentEventListeners)
+  ..addAll(_miscEventListeners)
+  ..addAll(_touchEventListeners)
+  ..addAll(_selectEventListeners);
 
-final Set<String> _mouseEvents = new Set.from([
-  'onClick',
-  'onContextMenu',
-  'onDblClick',
-  'onMouseDown',
-  'onMouseEnter',
-  'onMouseLeave',
-  'onMouseMove',
-  'onMouseOver',
-  'onMouseOut',
-  'onMoudeUp'
-]);
+final Map<String, dynamic> _mouseEventListeners = {
+  'onClick': _handleMouseEvent,
+  'onContextMenu': _handleMouseEvent,
+  'onDblClick': _handleMouseEvent,
+  'onMouseDown': _handleMouseEvent,
+  'onMouseEnter': _handleMouseEvent,
+  'onMouseLeave': _handleMouseEvent,
+  'onMouseMove': _handleMouseEvent,
+  'onMouseOver': _handleMouseEvent,
+  'onMouseOut': _handleMouseEvent,
+  'onMoudeUp': _handleMouseEvent
+};
 
-final Set<String> _keyboardEvents = new Set.from([
-  'onKeyDown',
-  'onKeyPress',
-  'onKeyUp'
-]);
+final Map<String, dynamic> _keyboardEventListeners = {
+  'onKeyDown': _handleKeyboardEvent,
+  'onKeyPress': _handleKeyboardEvent,
+  'onKeyUp': _handleKeyboardEvent
+};
 
-final Set<String> _frameEvents = new Set.from([
-  'onAbort',
-  'onBeforeUnload',
-  'onError',
-  'onHashChange',
-  'onLoad',
-  'onPageShow',
-  'onPageHide',
-  'onResize',
-  'onScroll',
-  'onUnload'
-]);
+final Map<String, dynamic> _frameEventListeners = {
+  'onAbort': _handleFrameEvent,
+  'onBeforeUnload': _handleFrameEvent,
+  'onError': _handleFrameEvent,
+  'onHashChange': _handleFrameEvent,
+  'onLoad': _handleFrameEvent,
+  'onPageShow': _handleFrameEvent,
+  'onPageHide': _handleFrameEvent,
+  'onResize': _handleFrameEvent,
+  'onScroll': _handleFrameEvent,
+  'onUnload': _handleFrameEvent
+};
 
-final Set<String> _formEvents = new Set.from([
-  'onChange',
-  'onInput',
-  'onInvalid',
-  'onReset',
-  'onSearch',
-  'onSelect',
-  'onSubmit'
-]);
+final Map<String, dynamic> _formEventListeners = {
+  'onChange': _handleFormEvent,
+  'onInput': _handleFormEvent,
+  'onInvalid': _handleFormEvent,
+  'onReset': _handleFormEvent,
+  'onSearch': _handleFormEvent,
+  'onSelect': _handleFormEvent,
+  'onSubmit': _handleFormEvent
+};
 
-final Set<String> _dragEvents = new Set.from([
-  'onDrag',
-  'onDragEnd',
-  'onDragLeave',
-  'onDragOver',
-  'onDragStart',
-  'onDrop'
-]);
+final Map<String, dynamic> _dragEventListeners = {
+  'onDrag': _handleDragEvent,
+  'onDragEnd': _handleDragEvent,
+  'onDragLeave': _handleDragEvent,
+  'onDragOver': _handleDragEvent,
+  'onDragStart': _handleDragEvent,
+  'onDrop': _handleDragEvent
+};
 
-final Set<String> _clipboardEvents = new Set.from([
-  'onCopy',
-  'onCut',
-  'onPaste'
-]);
+final Map<String, dynamic> _clipboardEventListeners = {
+  'onCopy': _handleClipboardEvent,
+  'onCut': _handleClipboardEvent,
+  'onPaste': _handleClipboardEvent
+};
 
-final Set<String> _printEvents = new Set.from([
-  'onAfterPrint',
-  'onBeforePrint'
-]);
+final Map<String, dynamic> _printEventListeners = {
+  'onAfterPrint': _handlePrintEvent,
+  'onBeforePrint': _handlePrintEvent
+};
 
-final Set<String> _mediaEvents = new Set.from([
-  'onAbort',
-  'onCanPlay',
-  'onCanPlayThrough',
-  'onDurationChange',
-  'onEmptied',
-  'onEnded',
-  'onError',
-  'onLoadedData',
-  'onLoadedMetaData',
-  'onLoadStart',
-  'onPause',
-  'onPlay',
-  'onPlaying',
-  'onProgress',
-  'onRateChange',
-  'onSeeked',
-  'onSeeking',
-  'onStalled',
-  'onSuspend',
-  'onTimeUpdate',
-  'onVolumeChange',
-  'onWaiting'
-]);
+final Map<String, dynamic> _mediaEventListeners = {
+  'onAbort': _handleMediaEvent,
+  'onCanPlay': _handleMediaEvent,
+  'onCanPlayThrough': _handleMediaEvent,
+  'onDurationChange': _handleMediaEvent,
+  'onEmptied': _handleMediaEvent,
+  'onEnded': _handleMediaEvent,
+  'onError': _handleMediaEvent,
+  'onLoadedData': _handleMediaEvent,
+  'onLoadedMetaData': _handleMediaEvent,
+  'onLoadStart': _handleMediaEvent,
+  'onPause': _handleMediaEvent,
+  'onPlay': _handleMediaEvent,
+  'onPlaying': _handleMediaEvent,
+  'onProgress': _handleMediaEvent,
+  'onRateChange': _handleMediaEvent,
+  'onSeeked': _handleMediaEvent,
+  'onSeeking': _handleMediaEvent,
+  'onStalled': _handleMediaEvent,
+  'onSuspend': _handleMediaEvent,
+  'onTimeUpdate': _handleMediaEvent,
+  'onVolumeChange': _handleMediaEvent,
+  'onWaiting': _handleMediaEvent
+};
 
-final Set<String> _animationEvents = new Set.from([
-  'animationEnd',
-  'animationIteration',
-  'animationStart'
-]);
+final Map<String, dynamic> _animationEventListeners = {
+  'animationEnd': _handleAnimationEvent,
+  'animationIteration': _handleAnimationEvent,
+  'animationStart': _handleAnimationEvent
+};
 
-final Set<String> _transitionEvents = new Set.from([
-  'transitionEnd'
-]);
+final Map<String, dynamic> _transitionEventListeners = {
+  'transitionEnd': _handleTransitionEvent
+};
 
-final Set<String> _serverSentEvents = new Set.from([
-  'onError',
-  'onMessage',
-  'onOpen'
-]);
+final Map<String, dynamic> _serverSentEventListeners = {
+  'onError': _handleServerSentEvent,
+  'onMessage': _handleServerSentEvent,
+  'onOpen': _handleServerSentEvent
+};
 
-final Set<String> _miscEvents = new Set.from([
-  'onMessage',
-  'onOnline',
-  'onPopState',
-  'onShow',
-  'onStorage',
-  'onToggle',
-]);
+final Map<String, dynamic> _miscEventListeners = {
+  'onMessage': _handleDomEvent,
+  'onOnline': _handleDomEvent,
+  'onPopState': _handleDomEvent,
+  'onShow': _handleDomEvent,
+  'onStorage': _handleDomEvent,
+  'onToggle': _handleDomEvent
+};
 
-final Set<String> _touchEvents = new Set.from([
-  'onTouchCancel',
-  'onTouchEnd',
-  'onTouchMove',
-  'onTouchStart'
-]);
+final Map<String, dynamic> _touchEventListeners = {
+  'onTouchCancel': _handleTouchEvent,
+  'onTouchEnd': _handleTouchEvent,
+  'onTouchMove': _handleTouchEvent,
+  'onTouchStart': _handleTouchEvent
+};
 
-final Set<String> _focusEvents = new Set.from([
-  'onFocus',
-  'onBlur',
-  'onFocusIn',
-  'onFocusOut'
-]);
-
-final Set<String> _wheelEvents = new Set.from([
-  'onMouseWheel',
-  'onWheel'
-]);
-
-final Set<String> _selectEvents = new Set.from([
-  'onSelect'
-]);
+final Map<String, dynamic> _selectEventListeners = {
+  'onSelect': _handleSelectEvent
+};

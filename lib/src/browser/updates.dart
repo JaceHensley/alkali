@@ -72,8 +72,7 @@ void _applyUpdatedChange(Node node) {
   node.component.willUpdate(node.change.newProps, node.component.nextState);
 
   if (node.component is DomComponent) {
-    _applyAttributes(node.domNode, node.change.newProps, oldProps: node.change.oldProps);
-    _applyEventListeners(node, node.change.newProps);
+    _parseProps(node, node.domNode, node.change.newProps, oldProps: node.change.oldProps);
   } else if (node.component is DomTextComponent) {
     node.domNode.text = node.component.props['children'];
   }

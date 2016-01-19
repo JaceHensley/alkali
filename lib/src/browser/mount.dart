@@ -46,8 +46,7 @@ void _mountNode(Node node, html.HtmlElement mountRoot) {
     node.domNode = element;
     _elementToNode[element] = node;
 
-    _applyAttributes(element, component.props);
-    _applyEventListeners(node, node.component.props);
+    _parseProps(node, element, component.props);
 
     node.children.forEach((Node child) {
       _mountNode(child, element);

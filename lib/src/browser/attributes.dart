@@ -1,27 +1,27 @@
 part of alkali.browser;
 
-void _applyAttributes(html.Element element, Map props, {Map oldProps}) {
+void _parseProps(Node node, html.Element element, Map props, {Map oldProps}) {
   if (oldProps == null) {
     oldProps = {};
-  } else {
-    oldProps = new Map.from(oldProps);
   }
 
-  props.forEach((String key, value) {
+  props.forEach((String key, dynamic value) {
     if (_isValidAttribute(element, key)) {
-      if (key == 'className') {
-        key = 'class';
-      }
-
-      if (oldProps[key] != value &&
-          element.getAttribute(key) != value) {
+      if (oldProps[key] != value) {
         _applyAttribute(element, key, value);
+      } else {
+        oldProps.remove(key);
       }
-      oldProps.remove(key);
+    } else {
+      var handler = _allListeners[key];
+
+      if (handler != null) {
+        _applyEventListener(node, element, key, handler);
+      }
     }
   });
 
-  oldProps.forEach((key, value) {
+  oldProps.forEach((String key, value) {
     element.attributes.remove(key);
   });
 }
@@ -31,6 +31,8 @@ void _applyAttribute(html.Element element, String key, dynamic value) {
     (value as Map).forEach((String propertyName, value) {
       element.style.setProperty(propertyName, value);
     });
+  } else if (key == 'className') {
+    element.className = value;
   } else {
     element.setAttribute(key, value.toString());
   }
