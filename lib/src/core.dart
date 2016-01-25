@@ -1,5 +1,6 @@
 library alkali.core;
 
+import 'dart:collection';
 import 'dart:async';
 import 'dart:html' as html;
 
