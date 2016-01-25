@@ -4,14 +4,14 @@ abstract class Component {
   Component(this._props): this._updateController = new StreamController<bool>();
 
   Component.fromChildren(dynamic child): this._updateController = new StreamController<bool>() {
-    this.props['children'] = child;
+    this._props['children'] = child;
   }
 
   Map _props = {};
   Map _state = {};
 
-  Map get props => _props;
-  Map get state => _state;
+  UnmodifiableMapView get props => new UnmodifiableMapView(_props);
+  UnmodifiableMapView get state => new UnmodifiableMapView(_state);
 
   Map _prevState;
   Map _nextState;
@@ -27,15 +27,15 @@ abstract class Component {
   void willReceiveProps(Map nextProps) {}
   bool shouldUpdate(Map nextProps, Map nextState) => true;
   void willUpdate(Map nextProps, Map nextState) {}
-  void didUpdate(Map prevProps, Map prevState, html.Element rootNode) {}
+  void didUpdate(Map prevProps, Map prevState) {}
   void willUnmount() {}
 
   Map getDefaultProps() => {};
   Map getInitialState() => {};
 
-  html.Element get domNode => _domNode;
-
   html.Element _domNode;
+
+  html.Element get domNode => _domNode;
 
   void setState(Map newState) {
     if (newState != null) {

@@ -1,6 +1,6 @@
 part of alkali.browser;
 
-void _parseProps(Node node, html.Element element, Map props, {Map oldProps}) {
+void parseProps(Node node, html.Element element, Map props, {Map oldProps}) {
   if (oldProps == null) {
     oldProps = {};
   }
@@ -9,7 +9,6 @@ void _parseProps(Node node, html.Element element, Map props, {Map oldProps}) {
     if (_isValidAttribute(element, key)) {
       if (oldProps[key] != value) {
         _applyAttribute(element, key, value);
-      } else {
         oldProps.remove(key);
       }
     } else {
