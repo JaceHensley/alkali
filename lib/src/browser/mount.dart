@@ -2,9 +2,9 @@ part of alkali.browser;
 
 final List<Node> _rootNodes = [];
 
-final Map<html.Node, Node> _elementToNode = {};
+final Map<html.Node, Node> elementToNode = {};
 
-void mountComponent(ComponentDescription description, html.HtmlElement mountRoot) {
+Node mountComponent(ComponentDescription description, html.HtmlElement mountRoot) {
   if (_isMounted(description, mountRoot)) {
     return _remountComponent(description, mountRoot);
   }
@@ -17,45 +17,49 @@ void mountComponent(ComponentDescription description, html.HtmlElement mountRoot
 
   mountRoot.children.clear();
 
-  _mountNode(node, mountRoot);
+  mountNode(node, mountRoot);
 
-  _elementToNode[mountRoot] = node;
+  elementToNode[mountRoot] = node;
+
+  return node;
 }
 
-void _remountComponent(ComponentDescription description, html.HtmlElement mountRoot) {
-  Node node = _elementToNode[mountRoot];
+Node _remountComponent(ComponentDescription description, html.HtmlElement mountRoot) {
+  Node node = elementToNode[mountRoot];
   node.apply(description: description);
   node.isDirty = true;
+
+  return node;
 }
 
 bool _isMounted(ComponentDescription description, html.HtmlElement mountRoot) {
-  return _elementToNode[mountRoot] != null && _elementToNode[mountRoot].factory == description.factory;
+  return elementToNode[mountRoot] != null && elementToNode[mountRoot].factory == description.factory;
 }
 
-void _mountNode(Node node, html.HtmlElement mountRoot) {
+void mountNode(Node node, html.HtmlElement mountRoot) {
   node.component.willMount();
 
   if (node.component is DomTextComponent) {
     html.Text text = new html.Text(node.component.props['children']);
     mountRoot.appendText(text.wholeText);
     node.domNode = mountRoot;
-    _elementToNode[mountRoot] = node;
+    elementToNode[mountRoot] = node;
   } else if (node.component is DomComponent) {
     DomComponent component = node.component;
     html.Element element = new html.Element.tag(component.tagName);
     node.domNode = element;
-    _elementToNode[element] = node;
+    elementToNode[element] = node;
 
     parseProps(node, element, component.props);
 
     node.children.forEach((Node child) {
-      _mountNode(child, element);
+      mountNode(child, element);
     });
 
     mountRoot.append(element);
   } else {
     node.children.forEach((Node child) {
-      _mountNode(child, mountRoot);
+      mountNode(child, mountRoot);
     });
 
     if (node.children.length > 1) {
