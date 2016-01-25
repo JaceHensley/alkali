@@ -59,8 +59,6 @@ class Node {
     this.component._domNode = value;
   }
 
-  NodeChange change;
-
   void componentNeedsUpdate(bool now) {
     this.isDirty = true;
   }
@@ -92,7 +90,6 @@ class Node {
     for(var index = 0; index < descriptions.length; index++) {
       var description = descriptions[index];
       Node newChild = new Node.fromDescription(node, description);
-      newChild.change = new NodeChange(NodeChangeType.created);
 
       newChild.init();
 
@@ -146,17 +143,17 @@ class Node {
         newChild._applyUpdatedChange(newChild.component.props, newChild._prevProps);
 
         if (index != oldChildren.values.toList().indexOf(node.children[index])) {
-          newChild.change = new NodeChange(NodeChangeType.moved);
+          newChild._applyMovedChange();
         }
         newChild.update(force: true);
         oldChildren.remove(index);
       } else {
         newChild = new Node.fromDescription(node, description);
         newChild.update();
-        newChild.change = new NodeChange(NodeChangeType.created);
+        newChild._applyCreatedChange();
 
         if (oldChild != null) {
-          oldChild.change = new NodeChange(NodeChangeType.deleted);
+          oldChild._applyDeletedChange();
           oldChildren.remove(index);
         }
       }
@@ -165,7 +162,7 @@ class Node {
     }
 
     oldChildren.forEach((int key, Node child) {
-      child.change = new NodeChange(NodeChangeType.deleted);
+      child._applyDeletedChange();
     });
 
     node.children = newChildren;
@@ -212,7 +209,7 @@ class Node {
 
   void _applyCreatedChange() {
     html.Element mountRoot = this.parent.domNode;
-    // _mountNode(this, mountRoot);
+    mountNode(this, mountRoot);
   }
 
   void _applyUpdatedChange(Map newProps, Map oldProps) {
@@ -271,7 +268,7 @@ class Node {
     if (this.component is DomComponent || this.component is DomTextComponent) {
       this.component.willUnmount();
 
-      // _elementToNode.remove(this.domNode);
+      elementToNode.remove(this.domNode);
       this.domNode.remove();
       this.domNode = null;
     } else {
