@@ -53,3 +53,6 @@ build/
 # Since alkali is a library package, we shouldn't track pubspec.lock:
 # https://www.dartlang.org/tools/pub/glossary.html#library-package
 /pubspec.lock
+
+# Should not track coverage
+coverage/
