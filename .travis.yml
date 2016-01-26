@@ -5,6 +5,8 @@ with_content_shell: ture
 before_install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
+env:
+  - DART_FLAGS=--checked
 script:
-  - ./tool/run_tests.sh
-  - ./tool/generate_coverage.sh
+  - pub run dart_dev test
+  - pub run dart_dev coverage
