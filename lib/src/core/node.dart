@@ -3,7 +3,6 @@ part of alkali.core;
 class Node {
   Node(this.parent, this.component, this.factory) {
     this.isDirty = true;
-    this.children = [];
     if (this.component.needsUpdate != null) {
       component.needsUpdate.listen(componentNeedsUpdate);
     }
@@ -17,9 +16,11 @@ class Node {
 
   final Node parent;
 
-  List<Node> children;
+  List<Node> children = [];
 
-  Map _oldProps;
+  Map _newProps;
+
+  Map _prevProps;
 
   final ComponentFactory factory;
 
@@ -57,22 +58,8 @@ class Node {
     this.component._domNode = value;
   }
 
-  NodeChange change;
-
   void componentNeedsUpdate(bool now) {
     this.isDirty = true;
-  }
-
-  void update({bool force: false}) {
-    if ((this.isDirty || force) && this.component.shouldUpdate(component.props, this._oldProps)) {
-      this.component._prevState = new Map.from(this.component._state);
-      this.change = new NodeChange(NodeChangeType.updated, oldProps: this._oldProps, newProps: this.component.props,
-          nextState: this.component._nextState ?? this.component._state, prevState: this.component._prevState);
-      this.component._state = new Map.from(this.change.nextState);
-      _updateChildren(this);
-    } else if (this.hasDirtyDescendant) {
-      this.children.forEach((Node child) => child.update());
-    }
   }
 
   void init() {
@@ -102,7 +89,6 @@ class Node {
     for(var index = 0; index < descriptions.length; index++) {
       var description = descriptions[index];
       Node newChild = new Node.fromDescription(node, description);
-      newChild.change = new NodeChange(NodeChangeType.created);
 
       newChild.init();
 
@@ -112,10 +98,30 @@ class Node {
     node.children = newChildren;
   }
 
-  void apply({ComponentDescription description}) {
-    this.component.willReceiveProps(description.props);
-    this._oldProps = this.component.props;
-    this.component._props = description.props;
+  void update({bool force: false}) {
+    if ((this.isDirty || force) && this.component.shouldUpdate(this._newProps, this.component._nextState)) {
+      this.component.willUpdate(this._newProps, this.component._nextState);
+
+      var prevProps = new Map.from(this.component.props);
+      if (this._newProps != null) {
+        this.component._props = new Map.from(this._newProps);
+      }
+
+      this.component._prevState = new Map.from(this.component._state);
+      if (this.component._nextState != null) {
+        this.component._state = new Map.from(this.component._nextState);
+      }
+
+      _updateChildren(this);
+
+      this.component.didUpdate(prevProps, this.component._prevState);
+
+      this.isDirty = this.hasDirtyDescendant = false;
+    } else if (this.hasDirtyDescendant) {
+      this.children.forEach((Node child) => child.update());
+
+      this.hasDirtyDescendant = false;
+    }
   }
 
   void _updateChildren(Node node) {
@@ -131,20 +137,19 @@ class Node {
 
       if (oldChild != null && oldChild.factory == description.factory) {
         newChild = oldChild;
-        newChild.apply(description: description);
+        newChild.apply(description);
 
-        if (index != oldChildren.values.toList().indexOf(node.children[index])) {
-          newChild.change = new NodeChange(NodeChangeType.moved);
-        }
+        newChild._applyUpdatedChange(newChild.component.props, newChild._prevProps);
+
         newChild.update(force: true);
         oldChildren.remove(index);
       } else {
         newChild = new Node.fromDescription(node, description);
         newChild.update();
-        newChild.change = new NodeChange(NodeChangeType.created);
+        newChild._applyCreatedChange();
 
         if (oldChild != null) {
-          oldChild.change = new NodeChange(NodeChangeType.deleted);
+          oldChild._applyDeletedChange();
           oldChildren.remove(index);
         }
       }
@@ -153,10 +158,16 @@ class Node {
     }
 
     oldChildren.forEach((int key, Node child) {
-      child.change = new NodeChange(NodeChangeType.deleted);
+      child._applyDeletedChange();
     });
 
     node.children = newChildren;
+  }
+
+  void apply(ComponentDescription description) {
+    this.component.willReceiveProps(description?.props ?? {});
+    this._prevProps = this.component._props;
+    this.component._props = description?.props;
   }
 
   Map<int, Node> _getOldChildrenMap(Node parent) {
@@ -189,6 +200,74 @@ class Node {
       return [];
     } else {
       throw 'Component.render should return ComponentDescription of List<ComponentDescription>.';
+    }
+  }
+
+  void _applyCreatedChange() {
+    html.Element mountRoot = this.parent.domNode;
+    mountNode(this, mountRoot);
+  }
+
+  void _applyUpdatedChange(Map newProps, Map oldProps) {
+    if (this.component is DomComponent) {
+      parseProps(this, this.domNode, newProps, oldProps: oldProps);
+    } else if (this.component is DomTextComponent) {
+      this.domNode.text = this.component.props['children'];
+    }
+  }
+
+  void _applyDeletedChange() {
+    if (this.component is DomComponent || this.component is DomTextComponent) {
+      this.component.willUnmount();
+
+      elementToNode.remove(this.domNode);
+      this.domNode.remove();
+      this.domNode = null;
+    } else {
+      this.component.willUnmount();
+      this.children.forEach((Node child) {
+        child._applyDeletedChange();
+      });
+    }
+  }
+
+  void _applyMovedChange() {
+    if (this.component is DomComponent) {
+      html.Element mountRoot = this.parent.domNode;
+      Node nextNode = _findFirstDomDescendant(this.parent, this);
+
+      html.Element element = this.parent.domNode;
+      html.Element nextElement = nextNode.parent.domNode;
+      mountRoot.insertBefore(element, nextElement);
+    } else {
+      this.children.reversed.forEach((Node child) => child._applyMovedChange());
+    }
+  }
+
+  Node _findFirstDomDescendant(Node parent, Node node) {
+    Node descendant;
+    Node result;
+    for (var index = parent.children.length - 1; index >= 0; index--) {
+      Node child = parent.children[index];
+      if (child != node) {
+        if (child.component is DomComponent && child.domNode != null) {
+          result = child;
+        } else if (!(child.component is DomComponent)) {
+          result = _findFirstDomDescendant(child, node);
+        }
+      }
+    }
+
+    if (result != null) {
+      return result;
+    }
+
+    if (parent.component is DomComponent) {
+      return null;
+    }
+
+    if (parent.parent != null) {
+      return _findFirstDomDescendant(parent.parent, parent);
     }
   }
 }

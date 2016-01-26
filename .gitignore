@@ -54,5 +54,5 @@ build/
 # https://www.dartlang.org/tools/pub/glossary.html#library-package
 /pubspec.lock
 
-# Should not track coverage
+# Should not track the output of code coverage
 coverage/

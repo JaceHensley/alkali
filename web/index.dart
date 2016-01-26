@@ -14,7 +14,8 @@ ComponentDescription CustomComponent() => _CustomComponentFactory();
 ComponentDescriptionFactory _CustomComponentFactory = registerComponent(([Map props]) => new _CustomComponent(props));
 
 class _CustomComponent extends Component {
-  _CustomComponent([props]): super(props);
+  _CustomComponent([Map props]) : super(props);
+
   @override
   Map getDefaultProps() => {
     'custom.colors': [
@@ -31,8 +32,7 @@ class _CustomComponent extends Component {
   };
 
   _handleClick(_) {
-    var nextIndex = ++state['custom.colorIndex'];
-    nextIndex = nextIndex % props['custom.colors'].length;
+    var nextIndex = (state['custom.colorIndex'] + 1) % props['custom.colors'].length;
     setState({
       'custom.colorIndex': nextIndex
     });
