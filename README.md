@@ -4,22 +4,22 @@
 
 Library to build reusable component, inspired by React.js.
 
-- [__Basic Usage__]('#basic-usage')
-  - [`Component`]('#component')
-    - [`props`]('#props')
-    - [`state`]('#state')
-    - [Lifecycle Methods]('#lifecyle-methods')
-      - [`render`]('#render')
-      - [`willMount`]('#willMount')
-      - [`didMount`]('#didMount')
-      - [`willReceiveProps`]('#willReceiveProps')
-      - [`shouldUpdate`]('#shouldUpdate')
-      - [`willUpdate`]('#willUpdate')
-      - [`didUpdate`]('#didUpdate')
-      - [`willUnmount`]('#willUnmount')
-  - [`registerComponent`]('#registerComponent')
-  - [`initAlkaliBrowserConfiguration`]('#initAlkaliBrowserConfiguration')
-  - [`mountComponent`]('#mountComponent')
+- [__Basic Usage__](#basic-usage)
+  - [`Component`](#component)
+    - [`props`](#props)
+    - [`state`](#state)
+    - [Lifecycle Methods](#lifecyle-methods)
+      - [`render`](#render)
+      - [`willMount`](#willMount)
+      - [`didMount`](#didMount)
+      - [`willReceiveProps`](#willReceiveProps)
+      - [`shouldUpdate`](#shouldUpdate)
+      - [`willUpdate`](#willUpdate)
+      - [`didUpdate`](#didUpdate)
+      - [`willUnmount`](#willUnmount)
+  - [`registerComponent`](#registerComponent)
+  - [`initAlkaliBrowserConfiguration`](#initAlkaliBrowserConfiguration)
+  - [`mountComponent`](#mountComponent)
 
 # Basic Usage
 
