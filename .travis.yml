@@ -1,0 +1,10 @@
+language: dart
+dart:
+  - stable
+with_content_shell: ture
+before_install:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+script:
+  - ./tool/run_tests.sh
+  - ./tool/generate_coverage.sh
