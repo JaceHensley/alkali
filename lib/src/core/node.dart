@@ -3,7 +3,6 @@ part of alkali.core;
 class Node {
   Node(this.parent, this.component, this.factory) {
     this.isDirty = true;
-    this.children = [];
     if (this.component.needsUpdate != null) {
       component.needsUpdate.listen(componentNeedsUpdate);
     }
@@ -17,7 +16,7 @@ class Node {
 
   final Node parent;
 
-  List<Node> children;
+  List<Node> children = [];
 
   Map _newProps;
 
@@ -103,7 +102,7 @@ class Node {
     if ((this.isDirty || force) && this.component.shouldUpdate(this._newProps, this.component._nextState)) {
       this.component.willUpdate(this._newProps, this.component._nextState);
 
-      var prevProps = new Map.from(this.component._props);
+      var prevProps = new Map.from(this.component.props);
       if (this._newProps != null) {
         this.component._props = new Map.from(this._newProps);
       }
@@ -138,7 +137,7 @@ class Node {
 
       if (oldChild != null && oldChild.factory == description.factory) {
         newChild = oldChild;
-        newChild.apply(description: description);
+        newChild.apply(description);
 
         newChild._applyUpdatedChange(newChild.component.props, newChild._prevProps);
 
@@ -165,10 +164,10 @@ class Node {
     node.children = newChildren;
   }
 
-  void apply({ComponentDescription description}) {
-    this.component.willReceiveProps(description.props);
+  void apply(ComponentDescription description) {
+    this.component.willReceiveProps(description?.props ?? {});
     this._prevProps = this.component._props;
-    this.component._props = description.props;
+    this.component._props = description?.props;
   }
 
   Map<int, Node> _getOldChildrenMap(Node parent) {
@@ -218,7 +217,18 @@ class Node {
   }
 
   void _applyDeletedChange() {
+    if (this.component is DomComponent || this.component is DomTextComponent) {
+      this.component.willUnmount();
 
+      elementToNode.remove(this.domNode);
+      this.domNode.remove();
+      this.domNode = null;
+    } else {
+      this.component.willUnmount();
+      this.children.forEach((Node child) {
+        child._applyDeletedChange();
+      });
+    }
   }
 
   void _applyMovedChange() {
@@ -258,21 +268,6 @@ class Node {
 
     if (parent.parent != null) {
       return _findFirstDomDescendant(parent.parent, parent);
-    }
-  }
-
-  void _removeNodeFromDom() {
-    if (this.component is DomComponent || this.component is DomTextComponent) {
-      this.component.willUnmount();
-
-      elementToNode.remove(this.domNode);
-      this.domNode.remove();
-      this.domNode = null;
-    } else {
-      this.component.willUnmount();
-      this.children.forEach((Node child) {
-        child._removeNodeFromDom();
-      });
     }
   }
 }

@@ -26,7 +26,7 @@ Node mountComponent(ComponentDescription description, html.HtmlElement mountRoot
 
 Node _remountComponent(ComponentDescription description, html.HtmlElement mountRoot) {
   Node node = elementToNode[mountRoot];
-  node.apply(description: description);
+  node.apply(description);
   node.isDirty = true;
 
   return node;

@@ -14,7 +14,8 @@ ComponentDescription CustomComponent() => _CustomComponentFactory();
 ComponentDescriptionFactory _CustomComponentFactory = registerComponent(([Map props]) => new _CustomComponent(props));
 
 class _CustomComponent extends Component {
-  _CustomComponent([props]): super(props);
+  _CustomComponent([Map props]) : super(props);
+
   @override
   Map getDefaultProps() => {
     'custom.colors': [

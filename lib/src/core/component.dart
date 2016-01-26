@@ -1,7 +1,7 @@
 part of alkali.core;
 
 abstract class Component {
-  Component(this._props): this._updateController = new StreamController<bool>();
+  Component([this._props]): this._updateController = new StreamController<bool>();
 
   Component.fromChildren(dynamic child): this._updateController = new StreamController<bool>() {
     this._props['children'] = child;
