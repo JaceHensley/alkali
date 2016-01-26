@@ -142,9 +142,6 @@ class Node {
 
         newChild._applyUpdatedChange(newChild.component.props, newChild._prevProps);
 
-        if (index != oldChildren.values.toList().indexOf(node.children[index])) {
-          newChild._applyMovedChange();
-        }
         newChild.update(force: true);
         oldChildren.remove(index);
       } else {
@@ -227,7 +224,7 @@ class Node {
   void _applyMovedChange() {
     if (this.component is DomComponent) {
       html.Element mountRoot = this.parent.domNode;
-      Node nextNode = _findFirstDomDescendant(this.parent);
+      Node nextNode = _findFirstDomDescendant(this.parent, this);
 
       html.Element element = this.parent.domNode;
       html.Element nextElement = nextNode.parent.domNode;
@@ -237,16 +234,16 @@ class Node {
     }
   }
 
-  Node _findFirstDomDescendant(Node parent) {
+  Node _findFirstDomDescendant(Node parent, Node node) {
     Node descendant;
     Node result;
     for (var index = parent.children.length - 1; index >= 0; index--) {
       Node child = parent.children[index];
-      if (child != this) {
+      if (child != node) {
         if (child.component is DomComponent && child.domNode != null) {
           result = child;
         } else if (!(child.component is DomComponent)) {
-          result = this._findFirstDomDescendant(child);
+          result = _findFirstDomDescendant(child, node);
         }
       }
     }
@@ -260,7 +257,7 @@ class Node {
     }
 
     if (parent.parent != null) {
-      return parent._findFirstDomDescendant(parent.parent);
+      return _findFirstDomDescendant(parent.parent, parent);
     }
   }
 
