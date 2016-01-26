@@ -1,6 +1,6 @@
 part of alkali.core;
 
-class ComponentDescription implements Map {
+class ComponentDescription {
   ComponentDescription(this.factory, this.props);
 
   ComponentFactory factory;
@@ -9,7 +9,7 @@ class ComponentDescription implements Map {
 
   Component createComponent() => this.factory(this.props);
 
-  ComponentDescription call({dynamic children}) {
+  ComponentDescription build([dynamic children]) {
     if (this.props['children'] == null) {
       this.props['children'] = [];
     }
@@ -19,17 +19,13 @@ class ComponentDescription implements Map {
     return this;
   }
 
+  ComponentDescription call([dynamic children]) {
+    return build(children);
+  }
+
   dynamic noSuchMethod(Invocation i) {
     if (i.memberName == #call && i.isMethod) {
-      if (this.props['children'] == null) {
-        this.props['children'] = [];
-      }
-
-      if (i.positionalArguments != null) {
-        this.props['children'].addAll(parseChildren(i.positionalArguments));
-      }
-
-      return this;
+      return build(i.positionalArguments);
     }
 
     return super.noSuchMethod(i);
