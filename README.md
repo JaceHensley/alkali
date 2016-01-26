@@ -89,3 +89,22 @@ class CustomComponent extends Component {
 
 #### `willUnmount`
 `willUnmount` is called right before the `Component` is remove from the DOM.
+
+## `registerComponent`
+In order to use a `Component` you have to register it by using the `registerComponent` function.
+
+```dart
+ComponentDescriptionFactory CustomComponentFactory = registerComponent(([Map props]) => new CustomComponent(props));
+```
+
+The returned `ComponentDescriptionFactory` is what will actually be used to render the `Component`.
+
+## `initAlkaliBrowserConfiguration`
+Before trying to mount component you have to call the top- level `initAlkaliBrowserConfiguration`. This allows the `Component`s to be updated.
+
+## `mountComponent`
+To render a `Component` into actual DOM use the `mountComponent` function.
+
+```dart
+mountComponent(CustomComponentFactory(), querySelector('#dart-entry-point'));
+```
